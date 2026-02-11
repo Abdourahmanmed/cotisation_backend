@@ -26,10 +26,9 @@ export async function register(req, res, next) {
     });
 
     // ✅ Envoi OTP email automatique
-    await sendEmailOtp({ email: user.email });
-
-    return res.status(201).json({
-      message: "Inscription OK. OTP envoyé par email.",
+    // ✅ Réponse immédiate
+    res.status(201).json({
+      message: "Inscription OK. OTP en cours d’envoi par email.",
       user: {
         id: user.id,
         fullName: user.fullName,
@@ -37,6 +36,11 @@ export async function register(req, res, next) {
         email: user.email,
         status: user.status,
       },
+    });
+
+    // ✅ Envoi OTP en arrière-plan (ne bloque pas)
+    sendEmailOtp({ email: user.email }).catch((e) => {
+      console.error("OTP send failed:", e?.message || e);
     });
   } catch (err) {
     // Prisma unique constraint (email/phone)
